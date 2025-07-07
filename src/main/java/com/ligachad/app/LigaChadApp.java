@@ -10,10 +10,6 @@ import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * Clase principal de la aplicación Liga de Fútbol Chad.
- * Proporciona un menú interactivo en consola para gestionar la liga.
- */
 public class LigaChadApp {
 
     private LigaService ligaService;
@@ -28,10 +24,7 @@ public class LigaChadApp {
         LigaChadApp app = new LigaChadApp();
         app.run();
     }
-
-    /**
-     * Inicia la aplicación y muestra el menú principal.
-     */
+    
     public void run() {
         int opcion;
         do {
@@ -88,8 +81,8 @@ public class LigaChadApp {
                     System.out.println("Opción inválida. Por favor, intente de nuevo.");
             }
             System.out.println("\nPresione Enter para continuar...");
-            scanner.nextLine(); // Consumir la nueva línea restante
-            scanner.nextLine(); // Esperar Enter
+            scanner.nextLine();
+            scanner.nextLine();
         } while (opcion != 0);
         scanner.close();
     }
@@ -119,10 +112,10 @@ public class LigaChadApp {
             return scanner.nextInt();
         } catch (InputMismatchException e) {
             System.out.println("Entrada inválida. Por favor, ingrese un número.");
-            scanner.nextLine(); // Limpiar el buffer del scanner
-            return -1; // Retornar una opción inválida
+            scanner.nextLine();
+            return -1;
         } finally {
-            scanner.nextLine(); // Consumir el resto de la línea después de nextInt()
+            scanner.nextLine();
         }
     }
 
@@ -181,25 +174,27 @@ public class LigaChadApp {
         int goles = leerEntero();
 
         if (goles > 0) {
-            ligaService.asignarGolesAJugadorEnPartido(nombrePartidoStr, nombreJugador, goles);
+
+            boolean golesAsignados = ligaService.asignarGolesAJugadorEnPartido(nombrePartidoStr, nombreJugador, goles);
+
+            if (golesAsignados) {
+                ligaService.buscarJugadorPorNombre(nombreJugador).ifPresent(j -> {
+                    if (j instanceof com.ligachad.model.JugadorTitular) {
+                        System.out.print("Ingrese los minutos jugados por " + j.getNombre() + ": ");
+                        int minutos = leerEntero();
+                        ((com.ligachad.model.JugadorTitular) j).setMinutosJugados(((com.ligachad.model.JugadorTitular) j).getMinutosJugados() + minutos);
+                    } else if (j instanceof com.ligachad.model.JugadorSuplente) {
+                        System.out.print("¿Ingresó " + j.getNombre() + " en este partido? (si/no): ");
+                        String ingreso = scanner.nextLine();
+                        if ("si".equalsIgnoreCase(ingreso)) {
+                            ((com.ligachad.model.JugadorSuplente) j).setPartidosIngresadosDesdeBanco(((com.ligachad.model.JugadorSuplente) j).getPartidosIngresadosDesdeBanco() + 1);
+                        }
+                    }
+                });
+            }
         } else {
             System.out.println("La cantidad de goles debe ser positiva.");
         }
-
-        // Simular que el titular jugó minutos o el suplente ingresó
-        ligaService.buscarJugadorPorNombre(nombreJugador).ifPresent(j -> {
-            if (j instanceof com.ligachad.model.JugadorTitular) {
-                System.out.print("Ingrese los minutos jugados por " + j.getNombre() + ": ");
-                int minutos = leerEntero();
-                ((com.ligachad.model.JugadorTitular) j).setMinutosJugados(((com.ligachad.model.JugadorTitular) j).getMinutosJugados() + minutos);
-            } else if (j instanceof com.ligachad.model.JugadorSuplente) {
-                System.out.print("¿Ingresó " + j.getNombre() + " en este partido? (si/no): ");
-                String ingreso = scanner.nextLine();
-                if ("si".equalsIgnoreCase(ingreso)) {
-                    ((com.ligachad.model.JugadorSuplente) j).setPartidosIngresadosDesdeBanco(((com.ligachad.model.JugadorSuplente) j).getPartidosIngresadosDesdeBanco() + 1);
-                }
-            }
-        });
     }
 
     private void transferirJugador() {
@@ -257,11 +252,11 @@ public class LigaChadApp {
         while (true) {
             try {
                 int valor = scanner.nextInt();
-                scanner.nextLine(); // Consumir el resto de la línea
+                scanner.nextLine();
                 return valor;
             } catch (InputMismatchException e) {
                 System.out.println("Entrada inválida. Por favor, ingrese un número entero.");
-                scanner.nextLine(); // Limpiar el buffer del scanner
+                scanner.nextLine();
                 System.out.print("Intente de nuevo: ");
             }
         }
